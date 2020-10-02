@@ -1,15 +1,32 @@
 const express = require("express");
 const layouts = require("express-ejs-layouts");
 const { v4: uuidV4 } = require("uuid");
-
+const mySql = require("mysql");
 const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
+const sqlManager = require("./public/sqlManager");
+
+// Setup SQL connection info
+const sqlCon = mySql.createConnection(
+  {
+    host: "localhost",
+    user: "root",
+    password: "root"
+  }
+);
+
+// Connect and setup database
+sql = new sqlManager(sqlCon);
+
+module.exports = sql;
 
 // Set up EJS
-//app.use(layouts);
 app.set("view engine", "ejs");
-app.use(express.static("public"));
+
+// Set up directories
+app.use(express.static("public/"));
+app.use(express.static("views/"));
 
 // Set up routes
 app.use("/", require("./routes/index"));
@@ -26,13 +43,6 @@ io.on("connection", socket =>
         })
     })
 })
-
-app.get("/", (req, res) => res.render("index"));
-app.get("/room", (req, res) => res.redirect(`/room=${uuidV4()}`));
-app.get("/room=:room", (req, res) =>
-  res.render("room", { roomId: req.params.room })
-);
-
 
 const port = process.env.PORT || 5000;
 

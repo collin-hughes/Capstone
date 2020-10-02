@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/room.css">
     <script>
         const ROOM_ID = "<%= roomId %>";
     </script>
@@ -11,26 +12,6 @@
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="roomManager.js" defer></script>
     <title>Room</title>
-    <style>
-        body {
-            margin: 0px;
-        }
-
-
-        #video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, 360px);
-            grid-auto-rows: 360px;
-        }
-
-        video {
-            width: 328px;
-            height: 328px;
-            object-fit: cover;
-            border: 8px solid black;
-            margin: 16px;
-        }
-    </style>
 </head>
 
 <body>

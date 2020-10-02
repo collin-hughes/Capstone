@@ -1,0 +1,19 @@
+body {
+  margin: 0px;
+  background-color: #0a0a0a;
+}
+
+#video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 360px);
+  grid-auto-rows: 360px;
+}
+
+video {
+  width: 328px;
+  height: 328px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #030303;
+  margin: 16px;
+}
