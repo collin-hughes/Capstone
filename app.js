@@ -44,6 +44,13 @@ io.on("connection", socket =>
     })
 })
 
+//app.get("/", (req, res) => res.render("index"));
+//app.get("/room", (req, res) => res.redirect(`/room=${uuidV4()}`));
+//app.get("/room=:room", (req, res) =>
+//  res.render("room", { roomId: req.params.room })
+//);
+
+
 const port = process.env.PORT || 5000;
 
 server.listen(port, console.log(`Server started on port ${port}`));
