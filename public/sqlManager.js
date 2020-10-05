@@ -19,17 +19,18 @@ class SQLManager {
       console.log("Connected to database successfully!");
     });
 
-    var query = "CREATE DATABASE conferenceDb";
+    //var query = "CREATE DATABASE conferenceDb";
 
-    this.sqlConnection.query(query, (err, result) => {
-      if (err) {
-        console.log(err.message);
-      } else {
-        console.log("Database created.");
-      }
-    });
+    //this.sqlConnection.query(query, (err, result) => {
+    //  if (err) {
+    //    console.log(err.message);
+    //  } else {
+    //    console.log("Database created.");
+    //  }
+    //});
 
-    var query = "USE conferenceDb";
+    //var query = "USE conferenceDb";
+    var query = "USE heroku_02d83eb6efdee97";
 
     this.sqlConnection.query(query, (err, result) => {
       if (err) {

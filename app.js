@@ -8,13 +8,19 @@ const io = require("socket.io")(server);
 const sqlManager = require("./public/sqlManager");
 
 // Setup SQL connection info
-const sqlCon = mySql.createConnection(
-  {
-    host: "localhost",
-    user: "root",
-    password: "root"
-  }
-);
+//const sqlCon = mySql.createConnection(
+//  {
+//    host: "localhost",
+//    user: "root",
+//    password: "root"
+//  }
+//);
+
+const sqlCon = mySql.createConnection({
+  host: "us-cdbr-east-02.cleardb.com",
+  user: "b06a09bccf04b5",
+  password: "d0095677",
+});
 
 // Connect and setup database
 sql = new sqlManager(sqlCon);
