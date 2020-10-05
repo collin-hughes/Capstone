@@ -12,8 +12,7 @@ class SQLManager {
     this.sqlConnection.connect((err) => {
       if (err)
       {
-        console.log("SQL Error");
-        throw err;
+        console.log(err);
       } 
 
       console.log("Connected to database successfully!");
