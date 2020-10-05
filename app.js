@@ -16,7 +16,7 @@ const sqlManager = require("./public/sqlManager");
 //  }
 //);
 
-const sqlCon = mySql.createConnection({
+const sqlCon = mySql.createPool({
   host: "us-cdbr-east-02.cleardb.com",
   user: "b06a09bccf04b5",
   password: "d0095677",
