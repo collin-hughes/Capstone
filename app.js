@@ -1,26 +1,16 @@
 const express = require("express");
 const layouts = require("express-ejs-layouts");
-const { v4: uuidV4 } = require("uuid");
 const mySql = require("mysql");
 const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
+const fs = require("fs");
 const sqlManager = require("./public/sqlManager");
 
-// Setup SQL connection info
-//const sqlCon = mySql.createConnection(
-//  {
-//    host: "localhost",
-//    user: "root",
-//    password: "root"
-//  }
-//);
+var connectionInfo = SQLConfigLoader();
 
-const sqlCon = mySql.createPool({
-  host: "us-cdbr-east-02.cleardb.com",
-  user: "b06a09bccf04b5",
-  password: "d0095677",
-});
+// Setup SQL connection info
+const sqlCon = mySql.createConnection(connectionInfo);
 
 // Connect and setup database
 sql = new sqlManager(sqlCon);
@@ -50,13 +40,25 @@ io.on("connection", socket =>
     })
 })
 
-//app.get("/", (req, res) => res.render("index"));
-//app.get("/room", (req, res) => res.redirect(`/room=${uuidV4()}`));
-//app.get("/room=:room", (req, res) =>
-//  res.render("room", { roomId: req.params.room })
-//);
-
-
 const port = process.env.PORT || 5000;
 
 server.listen(port, console.log(`Server started on port ${port}`));
+
+function SQLConfigLoader()
+{
+  // Read in SQL Config
+  if (fs.existsSync("./config/dbconfig.json")) {
+    var connectionInfo = JSON.parse(fs.readFileSync("./config/dbconfig.json"));
+  } else {
+    const defaultDbConfig = {
+      host: "localhost",
+      user: "root",
+      password: "root",
+    };
+
+    fs.writeFileSync("./config/dbconfig.json", JSON.stringify(defaultDbConfig));
+    var connectionInfo = defaultDbConfig;
+  }
+
+  return connectionInfo
+}

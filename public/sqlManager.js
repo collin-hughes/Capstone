@@ -18,18 +18,17 @@ class SQLManager {
       console.log("Connected to database successfully!");
     });
 
-    //var query = "CREATE DATABASE conferenceDb";
+    var query = "CREATE DATABASE conferenceDb";
 
-    //this.sqlConnection.query(query, (err, result) => {
-    //  if (err) {
-    //    console.log(err.message);
-    //  } else {
-    //    console.log("Database created.");
-    //  }
-    //});
+    this.sqlConnection.query(query, (err, result) => {
+      if (err) {
+        console.log(err.message);
+      } else {
+        console.log("Database created.");
+      }
+    });
 
-    //var query = "USE conferenceDb";
-    var query = "USE heroku_02d83eb6efdee97";
+    var query = "USE conferenceDb";
 
     this.sqlConnection.query(query, (err, result) => {
       if (err) {
@@ -39,58 +38,15 @@ class SQLManager {
       }
     });
 
-    query = "CREATE TABLE rooms (roomId VARCHAR(255) PRIMARY KEY)";
+    //query = "CREATE TABLE rooms (roomId VARCHAR(255) PRIMARY KEY)";
 
-    this.sqlConnection.query(query, (err, result) => {
-      if (err) {
-        console.log(err.message);
-      } else {
-        console.log("Table created.");
-      }
-    });
-  }
-
-  CreateNewRoom(roomId, res) {
-    var success;
-    var query = "INSERT INTO rooms (roomId) VALUES ('" + roomId + "')";
-
-    this.sqlConnection.query(query, (err, result) => {
-      if (err) {
-        console.log(err.message);
-      } else {
-        console.log("Room added.");
-
-        res.redirect(`/room=${roomId}`);
-      }
-    });
-
-    return success;
-  }
-
-  CheckRoom(roomId, res) {
-    var success;
-    var query = "SELECT * FROM rooms WHERE roomId ='" + roomId + "'";
-
-    this.sqlConnection.query(query, (err, result) => {
-      if (err) {
-        console.log(err.message);
-      } else {
-        if(result !== null)
-        {
-          console.log(`Joining Room: ${result}.`);
-          
-          res.render("room", { roomId: roomId });
-        }
-
-        else
-        {
-          res.redirect("/");
-
-        }
-      }
-    });
-
-    return success;
+    //this.sqlConnection.query(query, (err, result) => {
+    //  if (err) {
+    //    console.log(err.message);
+    //  } else {
+    //    console.log("Table created.");
+    //  }
+    //});
   }
 }
 
