@@ -5,7 +5,6 @@ const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
 const fs = require("fs");
-const sqlManager = require("./public/sqlManager");
 
 var connectionInfo = SQLConfigLoader();
 
@@ -13,12 +12,15 @@ var connectionInfo = SQLConfigLoader();
 const sqlCon = mySql.createConnection(connectionInfo);
 
 // Connect and setup database
-sql = new sqlManager(sqlCon);
+MakeSQLConnection(sqlCon);
 
-module.exports = sql;
+module.exports = sqlCon;
 
 // Set up EJS
 app.set("view engine", "ejs");
+
+//Bodyparser
+app.use(express.urlencoded( { extended: false }));
 
 // Set up directories
 app.use(express.static("public/"));
@@ -26,6 +28,7 @@ app.use(express.static("views/"));
 
 // Set up routes
 app.use("/", require("./routes/index"));
+app.use("/users", require("./routes/users"));
 
 io.on("connection", socket =>
 {
@@ -62,3 +65,47 @@ function SQLConfigLoader()
 
   return connectionInfo
 }
+
+function MakeSQLConnection(sqlConnection) {
+    console.log("Setting up SQL connection");
+
+    // Test connection
+    sqlConnection.connect((err) => {
+      if (err)
+      {
+        console.log(err);
+      } 
+
+      console.log("Connected to database successfully!");
+    });
+
+    var query = "CREATE DATABASE conferenceDb";
+
+    sqlConnection.query(query, (err, result) => {
+      if (err) {
+        console.log(err.message);
+      } else {
+        console.log("Database created.");
+      }
+    });
+
+    var query = "USE conferenceDb";
+
+    sqlConnection.query(query, (err, result) => {
+      if (err) {
+        console.log(err.message);
+      } else {
+        console.log("Using conferenceDb.");
+      }
+    })
+
+    var query = "CREATE TABLE users (userId INT PRIMARY KEY AUTO_INCREMENT, lName VARCHAR(255), fName VARCHAR(255), username VARCHAR(255), password VARCHAR(255))";
+
+    sqlConnection.query(query, (err, result) => {
+      if (err) {
+        console.log(err.message);
+      } else {
+        console.log("Users table created.");
+      }
+    })
+};
