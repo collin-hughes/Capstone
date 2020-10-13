@@ -1,20 +1,23 @@
 const express = require("express");
 const layouts = require("express-ejs-layouts");
-const mySql = require("mysql");
+const mongoose = require("mongoose");
+const session = require("express-session");
+const passport = require("passport");
+
 const app = express();
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
-const fs = require("fs");
 
-var connectionInfo = SQLConfigLoader();
+// Require passport config
+require("./config/passport")(passport);
 
-// Setup SQL connection info
-const sqlCon = mySql.createConnection(connectionInfo);
+// Require db config
+const db = require("./config/keys").MongoURI;
 
-// Connect and setup database
-MakeSQLConnection(sqlCon);
-
-module.exports = sqlCon;
+// Connect to mongo database
+mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true})
+  .then(() => console.log("MongoDB Connected"))
+  .catch(err => console.log(err));
 
 // Set up EJS
 app.set("view engine", "ejs");
@@ -22,9 +25,20 @@ app.set("view engine", "ejs");
 //Bodyparser
 app.use(express.urlencoded( { extended: false }));
 
+// Express sessions
+app.use(session({
+  secret: "secret",
+  resave: true,
+  saveUnitialized: true,
+}));
+
 // Set up directories
 app.use(express.static("public/"));
 app.use(express.static("views/"));
+
+//Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Set up routes
 app.use("/", require("./routes/index"));
@@ -46,66 +60,3 @@ io.on("connection", socket =>
 const port = process.env.PORT || 5000;
 
 server.listen(port, console.log(`Server started on port ${port}`));
-
-function SQLConfigLoader()
-{
-  // Read in SQL Config
-  if (fs.existsSync("./config/dbconfig.json")) {
-    var connectionInfo = JSON.parse(fs.readFileSync("./config/dbconfig.json"));
-  } else {
-    const defaultDbConfig = {
-      host: "localhost",
-      user: "root",
-      password: "root",
-    };
-
-    fs.writeFileSync("./config/dbconfig.json", JSON.stringify(defaultDbConfig));
-    var connectionInfo = defaultDbConfig;
-  }
-
-  return connectionInfo
-}
-
-function MakeSQLConnection(sqlConnection) {
-    console.log("Setting up SQL connection");
-
-    // Test connection
-    sqlConnection.connect((err) => {
-      if (err)
-      {
-        console.log(err);
-      } 
-
-      console.log("Connected to database successfully!");
-    });
-
-    var query = "CREATE DATABASE conferenceDb";
-
-    sqlConnection.query(query, (err, result) => {
-      if (err) {
-        console.log(err.message);
-      } else {
-        console.log("Database created.");
-      }
-    });
-
-    var query = "USE conferenceDb";
-
-    sqlConnection.query(query, (err, result) => {
-      if (err) {
-        console.log(err.message);
-      } else {
-        console.log("Using conferenceDb.");
-      }
-    })
-
-    var query = "CREATE TABLE users (userId INT PRIMARY KEY AUTO_INCREMENT, lName VARCHAR(255), fName VARCHAR(255), username VARCHAR(255), password VARCHAR(255))";
-
-    sqlConnection.query(query, (err, result) => {
-      if (err) {
-        console.log(err.message);
-      } else {
-        console.log("Users table created.");
-      }
-    })
-};
