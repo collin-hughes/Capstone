@@ -1,10 +1,22 @@
 const express = require("express");
 const router = express.Router();
 const { v4: uuidV4 } = require("uuid");
+const sql = require("../app.js");
+const { ensureAuthenticated } = require("../config/auth.js");
 
-// Open welcome page
-//router.get("/", (req, res) => res.render("index"));
-//router.get("/rooms", (req, res) => res.redirect(`/rooms/${uuidV4()}`));
-//router.get("/rooms/:room", (req, res) => res.render("room", {roomId: req.params.room}));
+router.get("/", (req, res) => res.render("index"));
+
+router.get("/room", (req, res) => 
+  {
+    var roomId = uuidV4();
+
+    res.redirect(`/room=${roomId}`);
+  });
+
+router.get("/room=:room", ensureAuthenticated, (req, res) =>
+  {
+    res.render("room", { roomId: req.paramsroom });
+  }
+);
 
 module.exports = router;
