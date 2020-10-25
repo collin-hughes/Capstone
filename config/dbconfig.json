@@ -1,0 +1,3 @@
+{
+  "MongoURI": "mongodb://localhost/conferencedb"
+}

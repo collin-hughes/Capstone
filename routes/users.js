@@ -6,54 +6,24 @@ const passport = require("passport");
 const User = require("../models/User");
 
 // Get requests
-router.get("/login", (req, res) => res.render("Login"));
-router.get("/register", (req, res) => res.render("register"));
-
-// Post requests
-/*router.post("/register", (req, res) => {
-  const { fName, lName, username, password, password2 } = req.body;
-
-  // Check for all required fields
-  if (!fName || !lName || !username || !password || !password2) {
-    res.render("register", {
-      fName,
-      lName,
-      username,
-      password,
-      password2,
-    });
-  }
-
-  // Check that passwords match
-  if (password !== password2) {
-    res.render("register", {
-      fName,
-      lName,
-      username,
-      password,
-      password2,
-    });
-  }
-
-  //Check password length
-  if (password.length < 6) {
-    console.log("password not long enough");
-
-    res.render("register", {
-      fName,
-      lName,
-      username,
-      password,
-      password2,
-    });
-  } else {
-    AddUser(fName, lName, username, password, password2, res, sqlCon);
-  }
-});*/
+router.get("/login", (req, res) =>
+  res.render("Login", {
+    layout: "layouts/layout_main",
+    pgName: "Login",
+    pageCSS: "login",
+  })
+);
+router.get("/register", (req, res) =>
+  res.render("register", {
+    layout: "layouts/layout_main",
+    pgName: "Registration",
+    pageCSS: "register",
+  })
+);
 
 //Register handle
 router.post("/register", (req, res) => {
-    const { fName, lName, username, password, password2 } = req.body;
+    const { username, fName, lName, password, password2 } = req.body;
     let errors = [];
 
     //Check required fields
@@ -77,12 +47,15 @@ router.post("/register", (req, res) => {
     if(errors.length > 0)
     {
         res.render("register", {
-          //errors,
+          errors,
+          username,
           fName,
           lName,
-          username,
           password,
           password2,
+          layout: "layouts/layout_main",
+          pgName: "Registration",
+          pageCSS: "register",
         });
     }
 
@@ -92,17 +65,19 @@ router.post("/register", (req, res) => {
         User.findOne({ username: username })
             .then(user => {
                 if(user) {
-                    errors.push({ msg: "Email is already registered" });
-                    console.log("Username is already registered");
+                    errors.push({ msg: "Username is already registered" });
 
                     //User exists
                     res.render("register", {
-                        //errors,
-                        fName,
-                        lName,
-                        username,
-                        password,
-                        password2,
+                      errors,
+                      username,
+                      fName,
+                      lName,
+                      password,
+                      password2,
+                      layout: "layouts/layout_main",
+                      pgName: "Registration",
+                      pageCSS: "register",
                     });
                 }
 
@@ -127,8 +102,7 @@ router.post("/register", (req, res) => {
                         newUser
                           .save()
                           .then(user => {
-                              //req.flash("success_msg", "You are now registered and can log in!");
-                              console.log("User registered");
+                              req.flash("success_msg", "You are now registered and can log in!");
                               res.redirect("/users/login");
                           })
                           .catch((err) => console.log(err));
@@ -143,62 +117,8 @@ router.post("/login", (req, res, next) => {
   passport.authenticate("local", {
     successRedirect: "/",
     failureRedirect: "/users/login",
-    failureFlash: false
+    failureFlash: true
   })(req, res, next);
 })
 
 module.exports = router;
-
-/*function AddUser(fName, lName, username, password, password2, res, sqlCon) {
-  var query =
-    "SELECT * FROM conferencedb.users WHERE username='" + username + "'";
-
-  sqlCon.query(query, (err, result) => {
-    if (err) {
-      console.log(err.message);
-    } else {
-      if (result.length) {
-        console.log("A match was found");
-        res.render("register", {
-          fName,
-          lName,
-          username,
-          password,
-          password2,
-        });
-      } else {
-        bcrypt.genSalt(10, (err, salt) =>
-          bcrypt.hash(password, salt, (err, hash) => {
-            if (err) {
-              console.log(err.message);
-            }
-
-            // Set password to hash
-            hashedPassword = hash;
-
-            var query =
-              "INSERT INTO users (lName, fName, username, password) VALUES ('" +
-              lName +
-              "', '" +
-              fName +
-              "', '" +
-              username +
-              "', '" +
-              hashedPassword +
-              "')";
-
-            sqlCon.query(query, (err, result) => {
-              if (err) {
-                console.log(err.message);
-              } else {
-                console.log("User added successfully");
-              }
-            });
-          })
-        );
-
-        res.redirect("/users/login");
-      }
-    }
-  });
-};*/

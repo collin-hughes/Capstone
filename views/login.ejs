@@ -1,21 +1,21 @@
-<div>
-    <div>
-        <div>
-            <h1>Login</h1>
-            <form action="/users/login" method="POST">
-                <div>
-                    <label for="username">Username</label>
-                    <input type="username" id="username" name="username" placeholder="Enter Username" />
-                </div>
-                <div>
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter Password" />
-                </div>
-                <button type="submit">Login</button>
-            </form>
-            <p>
-                No Account? <a href="/users/register">Register</a>
-            </p>
+<%- include("./partials/header"); %>
+
+<section id="content">
+    <h1>Login</h1>
+
+    <form action="/users/login" method="POST">
+            <%- include("./partials/messages"); %>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="username" id="username" name="username" class="form-control" placeholder="Enter Username" />
         </div>
-    </div>
-</div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password" />
+        </div>
+        <button type="submit">Login</button>
+    </form>
+    <p>
+        No Account? <a href="/users/register">Register</a>
+    </p>
+</section>
