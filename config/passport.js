@@ -10,7 +10,7 @@ module.exports = function(passport) {
             .then(user => {
                 if(!user)
                 {
-                    return done(null, false, { emssage: "Email is not registered"});
+                    return done(null, false, { message: "Username is not registered"});
                 }
 
                 // Match the password
@@ -19,13 +19,11 @@ module.exports = function(passport) {
 
                     if(isMatch)
                     {
-                        console.log("User authenticated");
                         return done(null, user);
                     }
 
                     else
                     {
-                        console.log("Incorrect password!");
                         return done(null, false, {message: "Incorrect Password!"});
                     }
                 });

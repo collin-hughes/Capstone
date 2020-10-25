@@ -1,0 +1,46 @@
+body {
+    background-color: lightgray;
+    margin: 0px;
+    font-family: helvetica;
+    display: block;
+    overflow: hidden;
+}
+
+#navbar {
+    width: 100%;
+    font-size: 24px;
+    background-color: #4a4a4a;
+    border-bottom: 8px solid #030303;
+    padding: 32px;
+    padding-top: 28px;
+    padding-bottom: 64px;
+    color: lightgray;
+}
+
+#navbar h1
+{
+    float: left;
+    margin: 0px;
+}
+
+#navbar ul
+{
+    float: left;
+    margin: 0px;
+    list-style-type: none;
+}
+
+#navbar li 
+{   
+    float: left;
+    width: 128px;
+    text-align: center;
+}
+
+#navbar a {
+    display: block;
+    text-decoration: none;
+    color: lightgray;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}

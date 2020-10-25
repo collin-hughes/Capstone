@@ -1,45 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Conferencing App</title>
-</head>
+<%- include("./partials/header"); %>
 
-<body>
-    <h1>Register</h1>
-    <form action="/users/register" method="POST">
-        <div>
-            <label for="fName">First Name</label>
-            <input type="fName" id="fName" name="fName" placeholder="Enter First Name"
-                value="<%= typeof fName != 'undefined' ? fName : '' %>" />
-        </div>
-        <div>
-            <label for="lName">Last Name</label>
-            <input type="lName" id="lName" name="lName" placeholder="Enter Last Name"
-                value="<%= typeof lName != 'undefined' ? lName : '' %>" />
-        </div>
-        <div>
+<section id="content">
+<h1>Register</h1>
+
+<form action="/users/register" method="POST">
+    <%- include("./partials/messages"); %>
+        <div class="form-group">
             <label for="username">Username</label>
             <input type="username" id="username" name="username" class="form-control" placeholder="Create Username"
                 value="<%= typeof email != 'undefined' ? email : '' %>" />
         </div>
-        <div>
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" class="form-control" placeholder="Create Password"
-                value="<%= typeof password != 'undefined' ? password : '' %>" />
-        </div>
-        <div>
-            <label for="password2">Confirm Password</label>
-            <input type="password" id="password2" name="password2" class="form-control" placeholder="Confirm Password"
-                value="<%= typeof password2 != 'undefined' ? password2 : '' %>" />
-        </div>
-        <button type="submit">
-            Register
-        </button>
-    </form>
-    <p>Have An Account? <a href="/users/login">Login</a></p>
+    <div class="form-group">
+        <label for="fName">First Name</label>
+        <input type="fName" id="fName" name="fName" class="form-control" placeholder="Enter First Name"
+            value="<%= typeof fName != 'undefined' ? fName : '' %>" />
     </div>
+    <div class="form-group">
+        <label for="lName">Last Name</label>
+        <input type="lName" id="lName" name="lName" class="form-control" placeholder="Enter Last Name"
+            value="<%= typeof lName != 'undefined' ? lName : '' %>" />
     </div>
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Create Password"
+            value="<%= typeof password != 'undefined' ? password : '' %>" />
     </div>
-</body>
+    <div class="form-group">
+        <label for="password2">Confirm Password</label>
+        <input type="password" id="password2" name="password2" class="form-control" placeholder="Confirm Password"
+            value="<%= typeof password2 != 'undefined' ? password2 : '' %>" />
+    </div>
+    <button type="submit">
+        Register
+    </button>
+</form>
+<p>Have An Account? <a href="/users/login">Login</a></p>
+</section>

@@ -1,25 +1,30 @@
 const express = require("express");
 const layouts = require("express-ejs-layouts");
 const mongoose = require("mongoose");
+const flash = require("connect-flash");
 const session = require("express-session");
 const passport = require("passport");
-
 const app = express();
+const fs = require("fs");
 const server = require("http").Server(app);
 const io = require("socket.io")(server);
+
+// Require db config
+var databaseString = fs.readFileSync("./config/dbconfig.json");
+databaseString = JSON.parse(databaseString);
+console.log(databaseString);
+const db = databaseString.MongoURI;
 
 // Require passport config
 require("./config/passport")(passport);
 
-// Require db config
-const db = require("./config/keys").MongoURI;
-
 // Connect to mongo database
-mongoose.connect(db, { useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect(db.toString(), { useNewUrlParser: true, useUnifiedTopology: true})
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log(err));
 
 // Set up EJS
+app.use(layouts);
 app.set("view engine", "ejs");
 
 //Bodyparser
@@ -40,6 +45,17 @@ app.use(express.static("views/"));
 app.use(passport.initialize());
 app.use(passport.session());
 
+//Connect flash
+app.use(flash());
+
+//Global Vars
+app.use((req, res, next) => {
+    res.locals.success_msg = req.flash("success_msg");
+    res.locals.error_msg = req.flash("error_msg");
+    res.locals.error = req.flash("error");
+    next();
+});
+
 // Set up routes
 app.use("/", require("./routes/index"));
 app.use("/users", require("./routes/users"));
@@ -50,11 +66,15 @@ io.on("connection", socket =>
     {
         socket.join(roomId);
         socket.to(roomId).broadcast.emit("user-connected", userId);
-    
+
         socket.on("disconnect", () => {
         socket.to(roomId).broadcast.emit("user-disconnected", userId);    
         })
     })
+
+    socket.on("chat message", (msg) => {
+    io.emit("chat message", msg);
+    });
 })
 
 const port = process.env.PORT || 5000;
