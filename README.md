@@ -14,6 +14,8 @@ Next, setup MongoDB. Open the MongoDB Compass Community Application and connect 
 
 Download the source code for the project and extract it. Go into the config and change the databaseconfig.json file, alterting the value of MongoURI to be your database. If the previously created database was "conferencedb," then nothing has to be done here. Save this file.
 
+Generate a key.pem and cert.pem using OpenSSL. Place the resulting files in the "config" directory.
+
 Next, open a terminal window in this file. Run the command "npm -i videoconferenceapp." This will install all dependencies. Then run the command "npm run start." This will launch the application. 
 
 ## Use Instructions
