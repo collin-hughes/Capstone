@@ -6,7 +6,17 @@ const session = require("express-session");
 const passport = require("passport");
 const app = express();
 const fs = require("fs");
-const server = require("http").Server(app);
+const https = require("https");
+const os = require("os");
+
+const options = {
+  key: fs.readFileSync("./config/key.pem"),
+  cert: fs.readFileSync("./config/cert.pem"),
+};
+
+server = https.createServer(options, app);
+
+//const server = require("http").Server(app);
 const io = require("socket.io")(server);
 
 // Require db config
@@ -78,5 +88,8 @@ io.on("connection", socket =>
 })
 
 const port = process.env.PORT || 5000;
+
+var networkInterfaces = os.networkInterfaces();
+console.log(networkInterfaces);
 
 server.listen(port, console.log(`Server started on port ${port}`));
