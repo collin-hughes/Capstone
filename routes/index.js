@@ -17,10 +17,10 @@ router.get("/room", (req, res) =>
 router.get("/room=:room", ensureAuthenticated, (req, res) =>
 //router.get("/room/", ensureAuthenticated, (req, res) =>
   {
-    res.render("room", {
-    //res.render("newRoom", {
-      layout: "layouts/layout_room",
-      //layout: false,
+    //res.render("room", {
+    res.render("newRoom", {
+      //layout: "layouts/layout_room",
+      layout: false,
       roomId: req.params.room,
       name: req.user.username,
     });

@@ -6,21 +6,23 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="css/room.css">
   <script>
+    const ROOM_ID = "<%= roomId %>";
     const USR_NAME = "<%= name %>";
   </script>
   <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
   <script src="webrtc.js"></script>
+  <script src="utilities.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
 </head>
 
 <body>
 
   <div id="chat-bar">
-    <ul id="messages"></ul>
-    
-    <!--
+        <input id="roomId" value="<%= roomId %>" />
+        <button onClick="Disconnect()">DISCONNECT</button>
+    <ul id="messages"></ul>    
     <input id="message" placeholder="Type a Message..." />
-    <button onClick="EmitMessage()">SEND</button>-->
+    <button onClick="EmitMessage()">SEND</button>
   </div>
   
   <div id="video-grid">

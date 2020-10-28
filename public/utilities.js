@@ -17,3 +17,8 @@ function CreateRoom()
 {
     window.location.href = window.location.href + "room";
 }
+
+function Disconnect()
+{
+    window.location.href = "/";
+}

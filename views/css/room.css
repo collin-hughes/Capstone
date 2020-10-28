@@ -69,6 +69,7 @@ body {
 {
   box-sizing: border-box;
   width: 100%;
+  margin-top: 4px;
   margin-bottom: 4px;
   background-color: #f1f1f1;
   color: #4a4a4a;
@@ -87,6 +88,7 @@ body {
   font-weight: bold;
   font-size: 24px;
   overflow: hidden;
+  padding-bottom: 8px;
 }
 
 
