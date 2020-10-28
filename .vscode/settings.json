@@ -2,7 +2,6 @@
   "files.exclude": {
     "node_modules": true,
     ".vscode": true,
-    "package.json": true,
     "package-lock.json": true,
     "README.md": true
   }

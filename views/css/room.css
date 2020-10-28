@@ -107,4 +107,16 @@ video {
   border-radius: 12px;
   border: 4px solid #030303;
   margin: 16px;
+  margin-bottom: 0px;
+}
+
+.videoLabel {
+  color: white;
+  font: bold 18px Arial, Sans-Serif;
+  line-height: 16px;
+  height: 24px;
+  width: 90%;
+  margin-bottom: 16px;
+  margin-left: 16px;
+  text-align: center;
 }

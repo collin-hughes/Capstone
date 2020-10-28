@@ -6,18 +6,24 @@ const session = require("express-session");
 const passport = require("passport");
 const app = express();
 const fs = require("fs");
-const https = require("https");
+//const https = require("https");
 const os = require("os");
+//const ExpressPeerServer = require("peer").ExpressPeerServer;
 
-const options = {
-  key: fs.readFileSync("./config/key.pem"),
-  cert: fs.readFileSync("./config/cert.pem"),
-};
+//const WebSocket = require("ws");
+// based on examples at https://www.npmjs.com/package/ws
+//const WebSocketServer = WebSocket.Server;
 
-server = https.createServer(options, app);
+//const options = {
+//  key: fs.readFileSync("./config/key.pem"),
+//  cert: fs.readFileSync("./config/cert.pem"),
+//};
 
-//const server = require("http").Server(app);
-const io = require("socket.io")(server);
+//httpsServer = https.createServer(options, app);
+
+const httpServer = require("http").Server(app);
+//const io = require("socket.io")(httpsServer);
+const io = require("socket.io")(httpServer);
 
 // Require db config
 var databaseString = fs.readFileSync("./config/dbconfig.json");
@@ -26,7 +32,7 @@ console.log(databaseString);
 const db = databaseString.MongoURI;
 
 // Require passport config
-require("./config/passport")(passport);
+require("./passport")(passport);
 
 // Connect to mongo database
 mongoose.connect(db.toString(), { useNewUrlParser: true, useUnifiedTopology: true})
@@ -44,7 +50,6 @@ app.use(express.urlencoded( { extended: false }));
 app.use(session({
   secret: "secret",
   resave: true,
-  saveUnitialized: true,
 }));
 
 // Set up directories
@@ -70,10 +75,12 @@ app.use((req, res, next) => {
 app.use("/", require("./routes/index"));
 app.use("/users", require("./routes/users"));
 
+
 io.on("connection", socket =>
 {
     socket.on("join-room", (roomId, userId) =>
     {
+        console.log("Joined");
         socket.join(roomId);
         socket.to(roomId).broadcast.emit("user-connected", userId);
 
@@ -87,9 +94,36 @@ io.on("connection", socket =>
     });
 })
 
-const port = process.env.PORT || 5000;
+/*
+// Create a server for handling websocket calls
+const wss = new WebSocketServer({ server: httpsServer });
 
-var networkInterfaces = os.networkInterfaces();
-console.log(networkInterfaces);
+wss.on('connection', function (ws) {
+  ws.on('message', function (message) {
+    // Broadcast any received message to all clients
+    console.log('received: %s', message);
+    wss.broadcast(message);
+  });
 
-server.listen(port, console.log(`Server started on port ${port}`));
+  ws.on('error', () => ws.terminate());
+});
+
+wss.broadcast = function (data) {
+  this.clients.forEach(function (client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
+};
+*/
+
+
+const httpPort = process.env.PORT || 5000;
+
+//var networkInterfaces = os.networkInterfaces();
+//console.log(networkInterfaces);
+
+httpServer.listen(
+  httpPort,
+  console.log(`Server started on port ${httpPort}`)
+);

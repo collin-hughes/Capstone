@@ -20,18 +20,26 @@
             $('form').submit(function (e) {
                 var date = new Date();
                 e.preventDefault(); // prevents page reloading
-                console.log(USR_NAME);
+                //console.log(USR_NAME);
                 if ($('#m').val().length > 0) {
-                    socket.emit('chat message', ("[" + ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2) + ":" + ("0" + date.getSeconds()).slice(-2) + "] " + USR_NAME + ": ") + $('#m').val());
+                    fullMessage = {
+                        "room": ROOM_ID,
+                        "message": ("[" + ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2) + ":" + ("0" + date.getSeconds()).slice(-2) + "] " + USR_NAME + ": ") + $('#m').val()
+                    };
+
+                    socket.emit('chat message', (fullMessage));
                 }
                 $('#m').val('');
                 return false;
             });
 
             socket.on('chat message', function (msg) {
-                $('#messages').append($('<li>').text(msg));
-                var messageList = document.getElementById("messages");
-                messageList.scrollTop = messageList.scrollHeight;
+                if(msg.room === ROOM_ID)
+                {
+                    $('#messages').append($('<li>').text(msg.message));
+                    var messageList = document.getElementById("messages");
+                    messageList.scrollTop = messageList.scrollHeight;
+                    }
             });
         });
     </script>
