@@ -8,25 +8,24 @@ const app = express();
 const fs = require("fs");
 const https = require("https");
 const os = require("os");
+const WebSocket = require("ws");
+const WebSocketServer = WebSocket.Server;
 
 const options = {
   key: fs.readFileSync("./config/key.pem"),
   cert: fs.readFileSync("./config/cert.pem"),
 };
 
-server = https.createServer(options, app);
+// Create the https server
+httpsServer = https.createServer(options, app);
 
-//const server = require("http").Server(app);
-const io = require("socket.io")(server);
+// Load in the config settings
+const config = JSON.parse(fs.readFileSync("./config/config.json"));
 
-// Require db config
-var databaseString = fs.readFileSync("./config/dbconfig.json");
-databaseString = JSON.parse(databaseString);
-console.log(databaseString);
-const db = databaseString.MongoURI;
+const db = config.MongoURI;
 
 // Require passport config
-require("./config/passport")(passport);
+require("./passport")(passport);
 
 // Connect to mongo database
 mongoose.connect(db.toString(), { useNewUrlParser: true, useUnifiedTopology: true})
@@ -44,7 +43,6 @@ app.use(express.urlencoded( { extended: false }));
 app.use(session({
   secret: "secret",
   resave: true,
-  saveUnitialized: true,
 }));
 
 // Set up directories
@@ -70,26 +68,29 @@ app.use((req, res, next) => {
 app.use("/", require("./routes/index"));
 app.use("/users", require("./routes/users"));
 
-io.on("connection", socket =>
-{
-    socket.on("join-room", (roomId, userId) =>
-    {
-        socket.join(roomId);
-        socket.to(roomId).broadcast.emit("user-connected", userId);
+// Create a server for handling websocket calls
+const wss = new WebSocketServer({ server: httpsServer });
 
-        socket.on("disconnect", () => {
-        socket.to(roomId).broadcast.emit("user-disconnected", userId);    
-        })
-    })
+wss.on('connection', function (ws) {
+  ws.on('message', function (message) {
+    // Broadcast any received message to all clients
+    wss.broadcast(message);
+  });
 
-    socket.on("chat message", (msg) => {
-    io.emit("chat message", msg);
-    });
-})
+  ws.on('error', () => ws.terminate());
+});
 
-const port = process.env.PORT || 5000;
+wss.broadcast = function (data) {
+  this.clients.forEach(function (client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
+};
 
-var networkInterfaces = os.networkInterfaces();
-console.log(networkInterfaces);
+const httpsPort = process.env.PORT || config.ServerPort;
 
-server.listen(port, console.log(`Server started on port ${port}`));
+httpsServer.listen(
+  httpsPort,
+  console.log(`Server started on port ${httpsPort}`)
+);

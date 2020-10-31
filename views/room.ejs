@@ -1,9 +1,11 @@
 <div id="chat-bar">
-    <ul id="messages"></ul>
-    <form action="">
-        <input id="m" autocomplete="off" placeholder="Type a Message..."/>
-        <button>SEND</button>
-    </form>
+  <label id="roomIdLabel">Room ID (For Copying)</label>
+  <input id="roomId" class="roomId" value="<%= roomId %>" readonly />
+  <button onClick="Disconnect()" style="background-color: #a30000;">DISCONNECT</button>
+  <ul id="messages"></ul>
+  <input id="message" placeholder="Type a Message..." />
+  <button id="sendMessage" onClick="EmitMessage()">SEND</button>
 </div>
 
-<div id="video-grid"></div>
+<div id="video-grid">
+</div>

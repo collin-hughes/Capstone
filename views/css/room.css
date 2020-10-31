@@ -65,10 +65,26 @@ body {
   
 }
 
+#chat-bar label
+{
+  
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 4px;
+  background-color: #f1f1f1;
+  color: #4a4a4a;
+  border: 4px solid #030303;
+  border-radius: 4px;
+  font-size: 24px;
+  text-align: center;
+}
+
+
 #chat-bar input
 {
   box-sizing: border-box;
   width: 100%;
+  margin-top: 4px;
   margin-bottom: 4px;
   background-color: #f1f1f1;
   color: #4a4a4a;
@@ -87,6 +103,7 @@ body {
   font-weight: bold;
   font-size: 24px;
   overflow: hidden;
+  padding-bottom: 8px;
 }
 
 
@@ -98,13 +115,25 @@ body {
   grid-template-columns: repeat(auto-fill, 360px);
   grid-auto-rows: 360px;
   overflow-x: auto;
+  padding: 0
 }
 
 video {
   width: 328px;
   height: 328px;
   object-fit: cover;
+  margin: 16px;
+  margin-bottom: 0px;
   border-radius: 12px;
   border: 4px solid #030303;
-  margin: 16px;
+}
+
+.videoLabel {
+  color: white;
+  font: bold 18px Arial, Sans-Serif;
+  line-height: 16px;
+  height: 24px;
+  width: 100%;
+  margin-bottom: 16px;
+  text-align: center;
 }

@@ -2,6 +2,9 @@ const socket = io("/");
 const videoGrid = document.getElementById("video-grid");
 const myPeer = new Peer();
 
+console.log(myPeer);
+
+
 // Create a video object and mute client video
 const myVideo = document.createElement("video");
 const msg = document.getElementById("messages");
@@ -24,6 +27,8 @@ navigator.mediaDevices
       // Answer the call
       call.answer(stream);
 
+      console.log("Answered Call");
+
       // Create a video element
       const video = document.createElement("video");
 
@@ -31,6 +36,7 @@ navigator.mediaDevices
       call.on("stream", (userVideoStream) => {
         //Add the stream to the user's page
         addVideoStream(video, userVideoStream);
+        console.log("Stream Recieved");
       });
     });
 
@@ -72,8 +78,15 @@ myPeer.on("open", (id) => {
 
 // Connects the client with the new user
 function connectToNewUser(userId, stream) {
+
+  console.log(userId, stream);
+  
   // Open a call with the new user
   const call = myPeer.call(userId, stream);
+
+  myPeer.on("error", function(err) {
+    console.log(err);
+  });
 
   // Create a new video element
   const video = document.createElement("video");

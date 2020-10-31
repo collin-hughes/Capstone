@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A video conferencing software designed for business to install locally on their servers, bypassing centralized services like Zoom. ",
   "main": "app.js",
+  "bin" : "app.js",
   "scripts": {
     "start": "node app",
     "dev": "nodemon app"
@@ -25,9 +26,9 @@
     "express-ejs-layouts": "^2.5.0",
     "express-session": "^1.17.1",
     "mongoose": "^5.10.9",
-    "mysql": "^2.18.1",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
+    "peer": "^0.5.3",
     "socket.io": "^2.3.0",
     "uuid": "^8.3.0"
   },
