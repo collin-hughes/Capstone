@@ -1,294 +1,308 @@
-const WS_PORT = 5000; //make sure this matches the port for the webscokets server
-
-var localUuid;
-var localDisplayName;
-var localStream;
 var serverConnection;
+var localUser = {};
 var peerConnections = {};
 
 var peerConnectionConfig = {
-  'iceServers': [
-    { 'urls': 'stun:stun.stunprotocol.org:3478' },
-    { 'urls': 'stun:stun.l.google.com:19302' },
-  ]
+  iceServers: [
+    { urls: "stun:stun.stunprotocol.org:3478" },
+    { urls: "stun:stun.l.google.com:19302" },
+  ],
 };
 
 function start() {
-  localUuid = createUUID();
-
-  // Set the local display name for the user
-  localDisplayName = USR_NAME;
-
-  // specify no audio for user media
-  var constraints = {
-    video: {
-      width: {max: 320},
-      height: {max: 240},
-      frameRate: {max: 30},
-    },
-    audio: true,
-  };
-
-  // set up local video stream
+  // If the user's browser supports get user media
   if (navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia(constraints)
-      .then(stream => {
-        localStream = stream;
-      
-        var vidElement = document.createElement("video");
-        vidElement.setAttribute("autoplay", "");
-        vidElement.setAttribute("muted", "");
-        vidElement.srcObject = stream;
-        vidElement.muted = true;
+    // Get the stream from the media devices
+    navigator.mediaDevices
+      .getUserMedia({
+        video: true,
+        audio: true
+      })
+      .then((stream) => {
+        // Set the local user data 
+        localUser = { uuid: USR_UUID, displayName: USR_NAME, stream: stream };
 
-        var vidContainer = document.createElement("div");
-        vidContainer.setAttribute("id", "localVideo");
-        vidContainer.setAttribute("class", "videoContainer");
-        vidContainer.appendChild(vidElement);
-        vidContainer.appendChild(makeLabel(localDisplayName));
+        CreateVidElement(
+          localUser.stream,
+          "localVideo",
+          localUser.displayName,
+          true
+        );
 
-        document.getElementById("video-grid").appendChild(vidContainer);
-      
-        SendChatNotification("You have joined the chat.");
+        // Send a notification that you have joined the chat
+        SendChatNotification(
+          localUser.displayName,
+          "You have joined the room."
+        );
+      })
+      .catch(ErrorHandler)
 
-      }).catch(errorHandler)
-
-      // set up websocket and message all existing clients
+      // Set up websocket and message all existing clients
       .then(() => {
-        serverConnection = new WebSocket('wss://' + window.location.hostname + ':' + WS_PORT);
-        serverConnection.onmessage = gotMessageFromServer;
-        serverConnection.onopen = event => {
-          serverConnection.send(JSON.stringify({ 'roomId': ROOM_ID, 'displayName': localDisplayName, 'uuid': localUuid, 'dest': 'all' }));
-        }
-      }).catch(errorHandler);
+        // Connect to the WebSocket
+        serverConnection = new WebSocket(
+          "wss://" + window.location.hostname + ":" + PORT
+        );
 
+        // When we recieve a message from the server, parse it
+        serverConnection.onmessage = GotMessageFromServer;
+
+        // When we open a connection, send all of our data to the server
+        serverConnection.onopen = (event) => {
+          serverConnection.send(
+            JSON.stringify({
+              roomId: ROOM_ID,
+              displayName: localUser.displayName,
+              uuid: localUser.uuid,
+              dest: "all",
+            })
+          );
+        };
+      })
+      .catch(ErrorHandler);
   } else {
-    alert('Your browser does not support getUserMedia API');
+    alert("Your browser does not support getUserMedia API");
   }
 }
 
-function gotMessageFromServer(message) {
-    var signal = JSON.parse(message.data);
-    var peerUuid = signal.uuid;
-    
-    //console.log(signal)
+function CreateVidElement(
+  stream,
+  containerName,
+  localDisplayName,
+  muted = false
+) {
+  // Create the video element
+  var vidElement = document.createElement("video");
+  vidElement.setAttribute("autoplay", "");
+  vidElement.setAttribute("muted", "");
+  vidElement.srcObject = stream;
+  vidElement.muted = muted;
 
-      if(signal.sourceRoom && signal.msgData)
-      {
-        if(signal.sourceRoom === ROOM_ID)
-          SendChatNotification(signal.msgData);
-      }
+  // Create a video container element
+  var vidContainer = document.createElement("div");
+  vidContainer.setAttribute("id", containerName);
+  vidContainer.setAttribute("class", "videoContainer");
+  vidContainer.appendChild(vidElement);
+  vidContainer.appendChild(MakeLabel(localDisplayName));
 
-      // Ignore messages that are not for us or from ourselves
-      if (
-        peerUuid == localUuid ||
-        (signal.dest != localUuid && signal.dest != "all")
-      )
-        return;
+  // Add the video container to the grid
+  document.getElementById("video-grid").appendChild(vidContainer);
+}
 
-      // Check if we are the original peer and if they are in the same room
-      if (signal.displayName && signal.dest == "all" && signal.roomId === ROOM_ID) {
-        // Set up peer connection object for a new peer
-        setUpPeer(signal.roomId, peerUuid, signal.displayName);
+function GotMessageFromServer(message) {
+  var signal = JSON.parse(message.data);
+  var peerUuid = signal.uuid;
 
-        serverConnection.send(
-          JSON.stringify({
-            roomId: signal.roomId,
-            displayName: localDisplayName,
-            uuid: localUuid,
-            dest: peerUuid,
-          })
-        );
-
-        // Check if we are the new peer and are in the same room
-      } else if (signal.displayName && signal.dest == localUuid && signal.roomId === ROOM_ID) {
-        // Initiate call if we are the new peer
-        setUpPeer(signal.roomId, peerUuid, signal.displayName, true);
-      } 
-
-      else if (signal.sdp) {
-        peerConnections[peerUuid].pc
-          .setRemoteDescription(new RTCSessionDescription(signal.sdp))
-          .then(function () {
-            // Only create answers in response to offers
-            if (signal.sdp.type == "offer") {
-              peerConnections[peerUuid].pc
-                .createAnswer()
-                .then((description) =>
-                  createdDescription(description, peerUuid)
-                )
-                .catch(errorHandler);
-            }
-          })
-          .catch(errorHandler);
-      } else if (signal.ice) {
-        peerConnections[peerUuid].pc
-          .addIceCandidate(new RTCIceCandidate(signal.ice))
-          .catch(errorHandler);
-      }
+  // If the signal includes a source room and message data, we know it's a chat message
+  if (signal.content) {
+    if (signal.roomId === ROOM_ID) {
+      SendChatNotification(signal.displayName, signal.content);
     }
+  }
 
-function setUpPeer(roomId, peerUuid, displayName, initCall = false) {
+  // Ignore messages that are not for us or from ourselves
+  if (
+    peerUuid == localUser.uuid ||
+    (signal.dest != localUser.uuid && signal.dest != "all")
+  )
+    return;
+
+  // Check if we are the original peer and if they are in the same room
+  if (signal.displayName && signal.dest == "all" && signal.roomId === ROOM_ID) {
+    // Set up peer connection object for a new peer
+    SetUpPeer(peerUuid, signal.displayName);
+
+    // Send the local connection info to the server
+    serverConnection.send(
+      JSON.stringify({
+        roomId: ROOM_ID,
+        displayName: localUser.displayName,
+        uuid: localUser.uuid,
+        dest: peerUuid,
+      })
+    );
+
+    // Check if we are the new peer and are in the same room
+  } else if (
+    signal.displayName &&
+    signal.dest == localUser.uuid &&
+    signal.roomId === ROOM_ID
+  ) {
+    // Initiate call if we are the new peer
+    SetUpPeer(peerUuid, signal.displayName, true);
+  } else if (signal.sdp) {
+    peerConnections[peerUuid].pc
+      .setRemoteDescription(new RTCSessionDescription(signal.sdp))
+      .then(function () {
+        // Only create answers in response to offers
+        if (signal.sdp.type == "offer") {
+          peerConnections[peerUuid].pc
+            .createAnswer()
+            .then((description) => createdDescription(description, peerUuid))
+            .catch(ErrorHandler);
+        }
+      })
+      .catch(ErrorHandler);
+  } else if (signal.ice) {
+    peerConnections[peerUuid].pc
+      .addIceCandidate(new RTCIceCandidate(signal.ice))
+      .catch(ErrorHandler);
+  }
+}
+
+function SetUpPeer(peerUuid, displayName, newUser = false) {
+  //Store the peer connection
   peerConnections[peerUuid] = {
     displayName: displayName,
     pc: new RTCPeerConnection(peerConnectionConfig),
     recieved: false,
   };
 
-    peerConnections[peerUuid].pc.onicecandidate = (event) =>
-      gotIceCandidate(event, peerUuid);
+  // When the peer sends it's ice candidates, recieve them
+  peerConnections[peerUuid].pc.onicecandidate = (event) =>
+    GotIceCandidate(event, peerUuid);
 
-    peerConnections[peerUuid].pc.ontrack = (event) =>
-    {  
-      gotRemoteStream(event, peerUuid);
-    }
+  // When the peer sends it's stream, recieve it and display it
+  peerConnections[peerUuid].pc.ontrack = (event) =>
+    GotRemoteStream(event, peerUuid);
 
-    peerConnections[peerUuid].pc.oniceconnectionstatechange = (event) =>
-      checkPeerDisconnect(event, peerUuid);
+  // If the ICE connection status changes, check if the user has disconnected
+  peerConnections[peerUuid].pc.oniceconnectionstatechange = (event) =>
+    CheckPeerDisconnect(event, peerUuid);
 
-    peerConnections[peerUuid].pc.addStream(localStream);
+  // Add the local stream to the peers list of streams
+  peerConnections[peerUuid].pc.addStream(localUser.stream);
 
-
-  if (initCall) {
+  // If this user is the new user, initiate a call with the other users
+  if (newUser) {
     peerConnections[peerUuid].pc
       .createOffer()
       .then((description) => createdDescription(description, peerUuid))
-      .catch(errorHandler);
+      .catch(ErrorHandler);
   }
-  //}
-
-  SendChatNotification("You are in a chat with " + displayName + ".");
 }
 
-function gotIceCandidate(event, peerUuid) {
+function GotIceCandidate(event, peerUuid) {
   if (event.candidate != null) {
-    serverConnection.send(JSON.stringify({ 'ice': event.candidate, 'uuid': localUuid, 'dest': peerUuid }));
+    serverConnection.send(
+      JSON.stringify({
+        ice: event.candidate,
+        uuid: localUser.uuid,
+        dest: peerUuid,
+      })
+    );
   }
 }
 
 function createdDescription(description, peerUuid) {
-  console.log(`got description, peer ${peerUuid}`);
-  peerConnections[peerUuid].pc.setLocalDescription(description).then(function () {
-    serverConnection.send(JSON.stringify({ 'sdp': peerConnections[peerUuid].pc.localDescription, 'uuid': localUuid, 'dest': peerUuid }));
-  }).catch(errorHandler);
+  console.log(`Got description, peer ${peerUuid}`);
+  // Set the local description of the peer
+  peerConnections[peerUuid].pc
+    .setLocalDescription(description)
+    .then(function () {
+      serverConnection.send(
+        JSON.stringify({
+          sdp: peerConnections[peerUuid].pc.localDescription,
+          uuid: localUser.uuid,
+          dest: peerUuid,
+        })
+      );
+    })
+    .catch(ErrorHandler);
 }
 
-function gotRemoteStream(event, peerUuid) {
+function GotRemoteStream(event, peerUuid) {
+  // If we have not yet recieved a stream from this peer
   if (peerConnections[peerUuid]["recieved"] === false) {
     // Log the new peer
-    console.log(`got remote stream, peer ${peerUuid}`);
+    console.log(`Got remote stream, peer ${peerUuid}`);
 
-    //  Create a new video element for the stream
-    var vidElement = document.createElement("video");
-    vidElement.setAttribute("autoplay", "");
-    vidElement.setAttribute("muted", "");
-    vidElement.srcObject = event.streams[0];
+    // Create the new video element for the stream
+    CreateVidElement(
+      event.streams[0],
+      "remoteVideo_" + peerUuid,
+      peerConnections[peerUuid].displayName
+    );
 
-    var vidContainer = document.createElement("div");
-    vidContainer.setAttribute("id", "remoteVideo_" + peerUuid);
-    vidContainer.setAttribute("class", "videoContainer");
-    vidContainer.appendChild(vidElement);
-    vidContainer.appendChild(makeLabel(peerConnections[peerUuid].displayName));
+    SendChatNotification(
+      peerConnections[peerUuid].displayName,
+      "User has joined the room."
+    );
 
-    document.getElementById("video-grid").appendChild(vidContainer);
+    // Set the stream recieved flag to true
     peerConnections[peerUuid]["recieved"] = true;
   }
 }
 
-function checkPeerDisconnect(event, peerUuid) {
+function CheckPeerDisconnect(event, peerUuid) {
+  // Grab the peer state
   var state = peerConnections[peerUuid].pc.iceConnectionState;
+
+  // Log the peer state
   console.log(`connection with peer ${peerUuid} ${state}`);
+
+  // If the state is failed, closed or disconnected, remove the user
   if (state === "failed" || state === "closed" || state === "disconnected") {
+    // Send a message that the user has left
     SendChatNotification(
-      peerConnections[peerUuid].displayName + " has left the chat."
+      peerConnections[peerUuid].displayName,
+      "User has left the room."
     );
+
+    //Delete the user from the list and remove their video
     delete peerConnections[peerUuid];
-    document.getElementById('video-grid').removeChild(document.getElementById('remoteVideo_' + peerUuid));
+    var videoGrid = document.getElementById("video-grid");
+    videoGrid.removeChild(document.getElementById("remoteVideo_" + peerUuid));
   }
 }
 
-function makeLabel(label) {
-  var vidLabel = document.createElement('div');
+function MakeLabel(label) {
+  var vidLabel = document.createElement("div");
   vidLabel.appendChild(document.createTextNode(label));
-  vidLabel.setAttribute('class', 'videoLabel');
+  vidLabel.setAttribute("class", "videoLabel");
   return vidLabel;
 }
 
-function errorHandler(error) {
+function ErrorHandler(error) {
   console.log(error);
 }
 
-// Taken from http://stackoverflow.com/a/105074/515584
-// Strictly speaking, it's not a real UUID, but it gets the job done here
-function createUUID() {
-  function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-  }
-
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-}
-
-function SendChatNotification(message)
-{
-   var date = new Date();
-   var msg = document.getElementById("messages");
-
-   // Create a new message item and add it to the message list
-   var li = document.createElement("li");
-   li.appendChild(
-     document.createTextNode(
-       "[" +
-         date.getHours() +
-         ":" +
-         date.getMinutes() +
-         ":" +
-         date.getSeconds() +
-         "] " +
-         message
-     )
-   );
-
-   msg.appendChild(li);
-}
-
-function EmitMessage()
-{
-  var msg = document.getElementById("message");
-  
-  if(msg.value.length > 0)
-  {
-  fullMessage = serverConnection.send(
-    JSON.stringify({
-      sourceRoom: ROOM_ID,
-      msgData: USR_NAME + ": " + msg.value,
-    })
-  );
-
-  msg.value = "";
-  }
-}
-
-function SendMessage(message) {
-  // Create a new date object  
+function SendChatNotification(displayName, message) {
   var date = new Date();
-  
-  //Grab the messages object
-  var msg = document.getElementById("messages");
 
   // Create a new message item and add it to the message list
   var li = document.createElement("li");
   li.appendChild(
     document.createTextNode(
       "[" +
-        date.getHours() +
+        ("0" + date.getHours()).slice(-2) +
         ":" +
-        date.getMinutes() +
+        ("0" + date.getMinutes()).slice(-2) +
         ":" +
-        date.getSeconds() + 
+        ("0" + date.getSeconds()).slice(-2) +
         "] " +
+        displayName +
+        ": " +
         message
     )
   );
 
+  var msg = document.getElementById("messages");
   msg.appendChild(li);
+}
+
+function EmitMessage() {
+  var msg = document.getElementById("message");
+
+  if (msg.value.length > 0) {
+    fullMessage = serverConnection.send(
+      JSON.stringify({
+        roomId: ROOM_ID,
+        displayName: USR_NAME,
+        content: msg.value,
+      })
+    );
+
+    msg.value = "";
+  }
 }

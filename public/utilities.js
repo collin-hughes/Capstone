@@ -4,7 +4,6 @@ function JoinRoom()
     if(roomId.length > 0)
     {
         window.location.href = window.location.href + "room=" + roomId;
-        //window.location.href = window.location.href + "room/";
     }
 
     else

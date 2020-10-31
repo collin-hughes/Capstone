@@ -8,10 +8,7 @@ const app = express();
 const fs = require("fs");
 const https = require("https");
 const os = require("os");
-//const ExpressPeerServer = require("peer").ExpressPeerServer;
-
 const WebSocket = require("ws");
-// based on examples at https://www.npmjs.com/package/ws
 const WebSocketServer = WebSocket.Server;
 
 const options = {
@@ -19,17 +16,13 @@ const options = {
   cert: fs.readFileSync("./config/cert.pem"),
 };
 
+// Create the https server
 httpsServer = https.createServer(options, app);
 
-//const httpServer = require("http").Server(app);
-//const io = require("socket.io")(httpsServer);
-//const io = require("socket.io")(httpServer);
+// Load in the config settings
+const config = JSON.parse(fs.readFileSync("./config/config.json"));
 
-// Require db config
-var databaseString = fs.readFileSync("./config/dbconfig.json");
-databaseString = JSON.parse(databaseString);
-console.log(databaseString);
-const db = databaseString.MongoURI;
+const db = config.MongoURI;
 
 // Require passport config
 require("./passport")(passport);
@@ -75,33 +68,12 @@ app.use((req, res, next) => {
 app.use("/", require("./routes/index"));
 app.use("/users", require("./routes/users"));
 
-
-/*io.on("connection", socket =>
-{
-    socket.on("join-room", (roomId, userId) =>
-    {
-        console.log("Joined");
-        socket.join(roomId);
-        socket.to(roomId).broadcast.emit("user-connected", userId);
-
-        socket.on("disconnect", () => {
-        socket.to(roomId).broadcast.emit("user-disconnected", userId);    
-        })
-    })
-
-    socket.on("chat message", (msg) => {
-    io.emit("chat message", msg);
-    });
-})*/
-
-
 // Create a server for handling websocket calls
 const wss = new WebSocketServer({ server: httpsServer });
 
 wss.on('connection', function (ws) {
   ws.on('message', function (message) {
     // Broadcast any received message to all clients
-    console.log('received: %s', message, "\n");
     wss.broadcast(message);
   });
 
@@ -116,12 +88,7 @@ wss.broadcast = function (data) {
   });
 };
 
-
-
-const httpsPort = process.env.PORT || 5000;
-
-//var networkInterfaces = os.networkInterfaces();
-//console.log(networkInterfaces);
+const httpsPort = process.env.PORT || config.ServerPort;
 
 httpsServer.listen(
   httpsPort,
