@@ -6,10 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://bootswatch.com/4/journal/bootstrap.min.css">
     <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/menu.css">
+    <script src="https://kit.fontawesome.com/1c9144b004.js" crossorigin="anonymous"></script>
     <% if(typeof pageCSS !== "undefined") { %>
     <link rel="stylesheet" href="/css/<%=pageCSS + ".css"%>">
     <%} %>
     <link rel="stylesheet" href="/css/messages.css">
+
     <% if(pgName === "Home") {%>
     <script>
         function JoinRoom() {
@@ -29,12 +32,21 @@
     </script>
     <%} %>
 
+    <% if(pgName === "Wrong Client Detected") {%>
+    <script>
+        function ClientDownloadRedirect() {
+            window.location.href =
+                "https://www.cs.sunyit.edu/~hughesc4/cs498/project/client/";
+        }
+    </script>
+    <%} %>
+
+
     <title>ezChat <%= "- " + pgName %></title>
 </head>
 
 <body>
     <%- body %>
-
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
         integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"

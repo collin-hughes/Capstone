@@ -7,7 +7,7 @@ const passport = require("passport");
 const app = express();
 const fs = require("fs");
 const https = require("https");
-const os = require("os");
+const publicIp = require("public-ip");
 const WebSocket = require("ws");
 const WebSocketServer = WebSocket.Server;
 
@@ -67,21 +67,27 @@ app.use((req, res, next) => {
 // Set up routes
 app.use("/", require("./routes/index"));
 app.use("/users", require("./routes/users"));
+app.use("*", require("./routes/error"));
 
 // Create a server for handling websocket calls
 const wss = new WebSocketServer({ server: httpsServer });
 
+// On the connection event
 wss.on('connection', function (ws) {
   ws.on('message', function (message) {
     // Broadcast any received message to all clients
     wss.broadcast(message);
   });
 
+  // On the error event, close the socket
   ws.on('error', () => ws.terminate());
 });
 
+// Create a broadcast event
 wss.broadcast = function (data) {
+  // For each client
   this.clients.forEach(function (client) {
+    // If the client ready state is open, send the message data
     if (client.readyState === WebSocket.OPEN) {
       client.send(data);
     }
@@ -90,7 +96,13 @@ wss.broadcast = function (data) {
 
 const httpsPort = process.env.PORT || config.ServerPort;
 
+// Start the https server 
 httpsServer.listen(
   httpsPort,
-  console.log(`Server started on port ${httpsPort}`)
+  console.log(`Server started on port:${httpsPort}`)
 );
+
+// Output the server ip address
+(async () => {
+  console.log(await publicIp.v4());
+})();

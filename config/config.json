@@ -1,4 +1,5 @@
 {
   "ServerPort": 5000,
-  "MongoURI": "mongodb://localhost/conferencedb"
+  "MongoURI": "mongodb://localhost/conferencedb",
+  "ClientAppOnly": true
 }

@@ -2,10 +2,13 @@
 <html>
 
 <head>
-    <!-- prevent extraneous favicon requests -->
-    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="css/room.css">
     <script>
+        if ((navigator.userAgent.toLowerCase().indexOf(" electron/") === -1) && "<%= clientAppOnly %>" === "true")
+        {
+            window.location.replace("/download-client");
+        }
+
         const ROOM_ID = "<%= roomId %>";
         const USR_NAME = "<%= name %>";
         const USR_UUID = "<%= userUuid %>"
