@@ -2,8 +2,7 @@ body {
     background-color: lightgray;
     margin: 0px;
     font-family: helvetica;
-    display: block;
-    overflow: hidden;
+    display: block; 
 }
 
 #navbar {
@@ -13,8 +12,9 @@ body {
     border-bottom: 8px solid #030303;
     padding: 32px;
     padding-top: 28px;
-    padding-bottom: 64px;
+    padding-bottom: 28px;
     color: lightgray;
+    overflow: hidden;
 }
 
 #navbar h1

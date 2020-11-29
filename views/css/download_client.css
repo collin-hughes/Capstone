@@ -1,0 +1,59 @@
+body {
+    background-color: lightgray;
+    margin: 0px;
+    font-family: helvetica;
+    display: block;
+    overflow: hidden;
+}
+
+#content
+{
+    padding: 16px;
+    text-align: center;
+}
+
+#content h1
+{
+    font-size: 64px;
+    margin-bottom: 0;
+}
+
+#content h2
+{
+    font-size: 32px;
+    margin-top: 0;
+}
+
+#content h3
+{
+    font-size: 24px;
+}
+
+#content button
+{
+    background-color: #4a4a4a;
+    border: 2px solid #030303;
+    color: white;
+    display: inline-block;
+    font-size: 32px;
+    cursor: pointer;
+    margin: 16px;
+    padding: 16px;
+}
+
+#content button:hover
+{
+    background-color: #3b3b3b;
+}
+
+#content button:active
+{
+    background-color: #292929
+}
+
+#join-room input
+{
+    margin: 16px;
+    padding: 16px;
+    font-size: 32px;
+}

@@ -9,60 +9,55 @@ var peerConnectionConfig = {
   ],
 };
 
-function start() {
-  // If the user's browser supports get user media
-  if (navigator.mediaDevices.getUserMedia) {
-    // Get the stream from the media devices
-    navigator.mediaDevices
-      .getUserMedia({
-        video: true,
-        audio: true
-      })
-      .then((stream) => {
-        // Set the local user data 
-        localUser = { uuid: USR_UUID, displayName: USR_NAME, stream: stream };
+// If the user's browser supports get user media
+if (navigator.mediaDevices.getUserMedia) {
+  // Get the stream from the media devices
+  navigator.mediaDevices
+    .getUserMedia({
+      video: true,
+      audio: true,
+    })
+    .then((stream) => {
+      // Set the local user data
+      localUser = { uuid: USR_UUID, displayName: USR_NAME, stream: stream };
 
-        CreateVidElement(
-          localUser.stream,
-          "localVideo",
-          localUser.displayName,
-          true
+      CreateVidElement(
+        localUser.stream,
+        "localVideo",
+        localUser.displayName,
+        true
+      );
+
+      // Send a notification that you have joined the chat
+      SendChatNotification(localUser.displayName, "You have joined the room.");
+    })
+    .catch(ErrorHandler)
+
+    // Set up websocket and message all existing clients
+    .then(() => {
+      // Connect to the WebSocket
+      serverConnection = new WebSocket(
+        "wss://" + window.location.hostname + ":" + PORT
+      );
+
+      // When we recieve a message from the server, parse it
+      serverConnection.onmessage = GotMessageFromServer;
+
+      // When we open a connection, send all of our data to the server
+      serverConnection.onopen = (event) => {
+        serverConnection.send(
+          JSON.stringify({
+            roomId: ROOM_ID,
+            displayName: localUser.displayName,
+            uuid: localUser.uuid,
+            dest: "all",
+          })
         );
-
-        // Send a notification that you have joined the chat
-        SendChatNotification(
-          localUser.displayName,
-          "You have joined the room."
-        );
-      })
-      .catch(ErrorHandler)
-
-      // Set up websocket and message all existing clients
-      .then(() => {
-        // Connect to the WebSocket
-        serverConnection = new WebSocket(
-          "wss://" + window.location.hostname + ":" + PORT
-        );
-
-        // When we recieve a message from the server, parse it
-        serverConnection.onmessage = GotMessageFromServer;
-
-        // When we open a connection, send all of our data to the server
-        serverConnection.onopen = (event) => {
-          serverConnection.send(
-            JSON.stringify({
-              roomId: ROOM_ID,
-              displayName: localUser.displayName,
-              uuid: localUser.uuid,
-              dest: "all",
-            })
-          );
-        };
-      })
-      .catch(ErrorHandler);
-  } else {
-    alert("Your browser does not support getUserMedia API");
-  }
+      };
+    })
+    .catch(ErrorHandler);
+} else {
+  alert("Your browser does not support getUserMedia API");
 }
 
 function CreateVidElement(
@@ -173,7 +168,7 @@ function SetUpPeer(peerUuid, displayName, newUser = false) {
   // Add the local stream to the peers list of streams
   peerConnections[peerUuid].pc.addStream(localUser.stream);
 
-  // If this user is the new user, initiate a call with the other users
+  // If this user is the new user, initiate a call with the user
   if (newUser) {
     peerConnections[peerUuid].pc
       .createOffer()
