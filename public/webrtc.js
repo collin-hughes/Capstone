@@ -1,3 +1,5 @@
+// Adapted from: https://www.dmcinfo.com/latest-thinking/blog/id/9852/multi-user-video-chat-with-webrtc
+
 var serverConnection;
 var localUser = {};
 var peerConnections = {};
@@ -260,6 +262,7 @@ function MakeLabel(label) {
 
 function ErrorHandler(error) {
   console.log(error);
+  window.location.replace("conferror");
 }
 
 function SendChatNotification(displayName, message) {

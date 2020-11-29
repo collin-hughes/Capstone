@@ -32,4 +32,13 @@ router.get("/room=:room", ensureAuthenticated, (req, res) =>
   }
 );
 
+router.get("/conferror", (req, res) =>
+  res.render("error", {
+    layout: "layouts/layout_main",
+    pgName: "Error",
+    pageCSS: "error",
+    cause: "Ensure camera is not in use by another application and that your browser supports WebRTC",
+  })
+);
+
 module.exports = router;

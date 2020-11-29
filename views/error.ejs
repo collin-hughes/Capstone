@@ -2,4 +2,7 @@
 <section id="content">
     <h1>Uh Oh!</h1>
     <h2>Something went wrong!</h2>
+    <% if(typeof cause !== "undefined") {%>
+        <h3><%=cause%></h3>
+    <% } %>
 </section>

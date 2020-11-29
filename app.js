@@ -68,6 +68,7 @@ app.use((req, res, next) => {
 // Set up routes
 app.use("/", require("./routes/index"));
 app.use("/users", require("./routes/users"));
+app.use("/conferror", require("./routes/error"));
 app.use("*", require("./routes/error"));
 
 // Create a server for handling websocket calls
