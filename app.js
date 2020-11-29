@@ -22,15 +22,16 @@ httpsServer = https.createServer(options, app);
 // Load in the config settings
 const config = JSON.parse(fs.readFileSync("./config/config.json"));
 
+// Connect to the database
 const db = config.MongoURI;
-
-// Require passport config
-require("./passport")(passport);
 
 // Connect to mongo database
 mongoose.connect(db.toString(), { useNewUrlParser: true, useUnifiedTopology: true})
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log(err));
+
+// Require passport config
+require("./passport")(passport);
 
 // Set up EJS
 app.use(layouts);

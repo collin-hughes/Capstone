@@ -3,7 +3,6 @@ module.exports = {
     if (navigator.userAgent.toLowerCase().indexOf(" electron/") > -1) {
       return next();
     }
-
             console.log(process);
             console.log(process.versions);
             console.log(process.versions.electron);
